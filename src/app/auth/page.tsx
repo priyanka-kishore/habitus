@@ -5,16 +5,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function AuthPage() {
+  // Initialize router for navigation and search params for pre-filling email
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isSignIn, setIsSignIn] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  // State management for authentication
+  const [isSignIn, setIsSignIn] = useState(true); // Toggle between sign in and sign up modes
+  const [isLoading, setIsLoading] = useState(false); // Loading state during authentication
+  const [error, setError] = useState<string | null>(null); // Error message state
+
+  // Form state with email pre-filled from URL if available
   const [formData, setFormData] = useState({
     email: searchParams.get('email') || '',
     password: '',
   });
 
+  // Handle form submission for both sign in and sign up
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -22,12 +28,14 @@ export default function AuthPage() {
 
     try {
       if (isSignIn) {
+        // Attempt to sign in with email and password
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         if (error) throw error;
       } else {
+        // Attempt to create a new account
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -35,15 +43,17 @@ export default function AuthPage() {
         if (error) throw error;
       }
       
-      // Redirect to dashboard on successful auth
+      // Redirect to dashboard on successful authentication
       router.push('/dashboard');
     } catch (err) {
+      // Handle and display authentication errors
       setError(err instanceof Error ? err.message : 'An error occurred during authentication');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handle input changes for form fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -54,12 +64,16 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      {/* Authentication form container */}
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+        {/* Form header */}
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             {isSignIn ? 'Sign in to your account' : 'Create a new account'}
           </h2>
         </div>
+
+        {/* Error message display */}
         {error && (
           <div className="rounded-md bg-red-50 p-4">
             <div className="flex">
@@ -69,8 +83,11 @@ export default function AuthPage() {
             </div>
           </div>
         )}
+
+        {/* Authentication form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            {/* Email input field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -87,6 +104,8 @@ export default function AuthPage() {
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
+
+            {/* Password input field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -105,6 +124,7 @@ export default function AuthPage() {
             </div>
           </div>
 
+          {/* Submit button with loading state */}
           <div>
             <button
               type="submit"
@@ -112,6 +132,7 @@ export default function AuthPage() {
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
             >
               {isLoading ? (
+                // Loading spinner
                 <span className="flex items-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -126,6 +147,7 @@ export default function AuthPage() {
           </div>
         </form>
 
+        {/* Toggle between sign in and sign up modes */}
         <div className="text-center">
           <button
             type="button"
