@@ -8,4 +8,6 @@ export interface Goal {
   due_date: string;
   is_public: boolean;
   created_at: string;
+  description?: string | null;
+  // Add other fields as needed (e.g., updated_at, user_id)
 } 

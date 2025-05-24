@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-export default function AuthPage() {
-  // Initialize router for navigation and search params for pre-filling email
+function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -160,5 +159,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthForm />
+    </Suspense>
   );
 } 
