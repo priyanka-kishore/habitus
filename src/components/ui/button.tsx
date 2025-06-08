@@ -35,6 +35,9 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Used in {@link ThemeToggle}
+ */
 function Button({
   className,
   variant,
