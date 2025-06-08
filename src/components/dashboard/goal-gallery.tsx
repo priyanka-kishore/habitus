@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 import {
 	HamburgerMenuIcon,
 } from "@radix-ui/react-icons";
+import confetti from "canvas-confetti";
 
 interface Goal {
   id: string
@@ -20,6 +21,7 @@ interface Goal {
   frequency: "once" | "daily"
   due_date?: string
   created_at: string
+  done: boolean
 }
 
 export default function GoalGallery() {
@@ -36,6 +38,9 @@ export default function GoalGallery() {
     frequency: "once",
     due_date: ""
   });
+
+  // Create refs for each goal card
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     fetchGoals()
@@ -314,8 +319,17 @@ export default function GoalGallery() {
 
       {/* Gallery of Goal Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {goals.map(goal => (
-          <div key={goal.id} className="bg-white dark:bg-zinc-900 rounded-xl shadow p-6 flex flex-col gap-2 border relative">
+        {goals.map((goal, i) => (
+          <div
+            key={goal.id}
+            ref={el => { cardRefs.current[i] = el; }}
+            className={
+              `rounded-xl p-6 flex flex-col gap-2 border relative transition-all duration-200 ` +
+              (goal.done
+                ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                : "bg-white dark:bg-zinc-900")
+            }
+          >
             {/* More Dropdown */}
             <div className="absolute top-3 right-3">
               <DropdownMenu>
@@ -335,10 +349,46 @@ export default function GoalGallery() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="font-bold text-lg">{goal.name}</div>
+            {/* Checkbox to the left of goal name, no label */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={goal.done}
+                onChange={async (e) => {
+                  const checked = e.target.checked;
+                  setGoals(goals => goals.map(g => g.id === goal.id ? { ...g, done: checked } : g));
+                  await supabase
+                    .from("goals")
+                    .update({ done: checked })
+                    .eq("id", goal.id);
+                  // Only trigger confetti when checking off (not unchecking)
+                  if (checked && cardRefs.current[i]) {
+                    const rect = cardRefs.current[i]!.getBoundingClientRect();
+                    confetti({
+                      particleCount: 40,
+                      spread: 60,
+                      origin: {
+                        x: (rect.left + rect.width / 2) / window.innerWidth,
+                        y: (rect.top + rect.height / 2) / window.innerHeight
+                      },
+                      scalar: 0.6
+                    });
+                  }
+                }}
+                className="accent-blue-600 w-5 h-5 rounded border border-zinc-300 dark:border-zinc-700"
+              />
+              <div className="font-bold text-lg">{goal.name}</div>
+            </div>
             {goal.description && <div className="text-muted-foreground">{goal.description}</div>}
             <div className="text-xs mt-2">
-              <span className="inline-block px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 mr-2">
+              <span
+                className={
+                  `inline-block px-2 py-1 rounded mr-2 ` +
+                  (goal.frequency === "once"
+                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                    : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200")
+                }
+              >
                 {goal.frequency === "once" ? "One-time" : "Daily"}
               </span>
               {goal.due_date && (
