@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { GoalFilters } from "@/components/goals/goal-filters"
 import { GoalSort, type SortState } from "@/components/goals/goal-sort"
+import { AddGoalButton } from "@/components/goals/add-goal-button"
+import { AddGoalModal } from "@/components/goals/add-goal-modal"
 
 interface Goal {
   id: string
@@ -40,6 +42,7 @@ export default function GoalsPage() {
     order: "desc"
   })
   const [loading, setLoading] = useState(true)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
     fetchGoals()
@@ -95,11 +98,17 @@ export default function GoalsPage() {
       : (bValue < aValue ? -1 : 1)
   })
 
+  const handleGoalAdded = (newGoal: Goal) => {
+    setGoals([newGoal, ...goals])
+  }
+
   return (
     <div className="container px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">My Goals</h1>
         <div className="flex items-center gap-4">
+          <AddGoalButton onClick={() => setIsAddModalOpen(true)} />
+
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -119,6 +128,12 @@ export default function GoalsPage() {
           <GoalFilters onFilterChange={setFilters} />
         </div>
       </div>
+
+      <AddGoalModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onGoalAdded={handleGoalAdded}
+      />
 
       {/* Goals List */}
       {loading ? (
