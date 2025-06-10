@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { RightSidebar } from "@/components/dashboard/right-sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
             <main className="flex-1 p-8">
               {children}
             </main>
+            <RightSidebar />
           </div>
           <ThemeToggle />
         </ThemeProvider>
