@@ -8,6 +8,7 @@ import { GoalFilters } from "@/components/goals/goal-filters"
 import { GoalSort } from "@/components/goals/goal-sort"
 import { AddGoalButton } from "@/components/goals/add-goal-button"
 import { AddGoalModal } from "@/components/goals/add-goal-modal"
+import { EditGoalModal } from "@/components/goals/edit-goal-modal"
 import { GoalDetailsModal } from "@/components/goals/goal-details-modal"
 import { Goal, FilterState, SortState } from "@/types/goals"
 
@@ -28,6 +29,8 @@ export default function GoalsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
 
@@ -50,50 +53,54 @@ export default function GoalsPage() {
     setLoading(false)
   }
 
-  const filteredGoals = goals.filter(goal => {
-    // Search query filter
-    const matchesSearch = goal.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleGoalAdded = (newGoal: Goal) => {
+    setGoals([newGoal, ...goals])
+  }
 
-    // Additional filters
-    const matchesName = !filters.name || goal.name.toLowerCase().includes(filters.name.toLowerCase())
-    const matchesDescription = !filters.description || (goal.description && goal.description.toLowerCase().includes(filters.description.toLowerCase()))
+  const handleGoalUpdated = (updatedGoal: Goal) => {
+    setGoals(goals => goals.map(g => g.id === updatedGoal.id ? updatedGoal : g))
+  }
+
+  const handleEdit = (goal: Goal) => {
+    setEditingGoal(goal)
+    setEditOpen(true)
+  }
+
+  // Filter and sort goals
+  const filteredGoals = goals.filter(goal => {
+    const matchesSearch = goal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (goal.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+
+    const matchesName = filters.name === "" || goal.name.toLowerCase().includes(filters.name.toLowerCase())
+    const matchesDescription = filters.description === "" || (goal.description?.toLowerCase().includes(filters.description.toLowerCase()) ?? false)
     const matchesFrequency = filters.frequency === "all" || goal.frequency === filters.frequency
-    const matchesDueDate = !filters.dueDate || (goal.due_date && new Date(goal.due_date).toLocaleDateString('en-US', { timeZone: 'UTC' }) === filters.dueDate)
+    const matchesDueDate = filters.dueDate === "" || goal.due_date === filters.dueDate
     const matchesDone = filters.done === "all" || goal.done.toString() === filters.done
-    const matchesVisibility = filters.visibility === "all" || (goal.visibility || "public") === filters.visibility
+    const matchesVisibility = filters.visibility === "all" || goal.visibility === filters.visibility
 
     return matchesSearch && matchesName && matchesDescription && matchesFrequency && matchesDueDate && matchesDone && matchesVisibility
   })
 
   const sortedGoals = [...filteredGoals].sort((a, b) => {
-    const aValue = a[sort.field as keyof Goal]
-    const bValue = b[sort.field as keyof Goal]
+    const aValue = a[sort.field]
+    const bValue = b[sort.field]
 
-    if (aValue === null || aValue === undefined) return 1
-    if (bValue === null || bValue === undefined) return -1
-
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sort.order === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue)
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sort.order === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
     }
 
-    if (sort.field === 'due_date' || sort.field === 'created_at') {
+    if (sort.field === "due_date" || sort.field === "created_at") {
       const aDate = new Date(aValue as string)
       const bDate = new Date(bValue as string)
-      return sort.order === 'asc'
-        ? aDate.getTime() - bDate.getTime()
-        : bDate.getTime() - aDate.getTime()
+      return sort.order === "asc" ? aDate.getTime() - bDate.getTime() : bDate.getTime() - aDate.getTime()
     }
 
-    return sort.order === 'asc'
-      ? (aValue < bValue ? -1 : 1)
-      : (bValue < aValue ? -1 : 1)
-  })
+    if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+      return sort.order === "asc" ? (aValue === bValue ? 0 : aValue ? 1 : -1) : (aValue === bValue ? 0 : aValue ? -1 : 1)
+    }
 
-  const handleGoalAdded = (newGoal: Goal) => {
-    setGoals([newGoal, ...goals])
-  }
+    return 0
+  })
 
   return (
     <div className="container px-4 py-8">
@@ -128,10 +135,18 @@ export default function GoalsPage() {
         onGoalAdded={handleGoalAdded}
       />
 
+      <EditGoalModal
+        isOpen={editOpen}
+        onClose={() => { setEditOpen(false); setEditingGoal(null); }}
+        onGoalUpdated={handleGoalUpdated}
+        goal={editingGoal}
+      />
+
       <GoalDetailsModal
         isOpen={detailsOpen}
         onClose={() => { setDetailsOpen(false); setSelectedGoal(null); }}
         goal={selectedGoal}
+        onEdit={handleEdit}
       />
 
       {/* Goals List */}
