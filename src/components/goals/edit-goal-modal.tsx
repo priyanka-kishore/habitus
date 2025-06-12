@@ -5,30 +5,15 @@ import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-interface Goal {
-  id: string
-  name: string
-  description?: string
-  frequency: "once" | "daily"
-  due_date?: string
-  created_at: string
-  done: boolean
-}
-
-interface EditGoalModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onGoalUpdated: (goal: Goal) => void
-  goal: Goal | null
-}
+import { Goal, EditGoalModalProps } from "@/types/goals"
 
 export function EditGoalModal({ isOpen, onClose, onGoalUpdated, goal }: EditGoalModalProps) {
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
     frequency: "once" as "once" | "daily",
-    due_date: ""
+    due_date: "",
+    visibility: "private" as "public" | "private" | "friends"
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -39,7 +24,8 @@ export function EditGoalModal({ isOpen, onClose, onGoalUpdated, goal }: EditGoal
         name: goal.name,
         description: goal.description || "",
         frequency: goal.frequency,
-        due_date: goal.due_date || ""
+        due_date: goal.due_date || "",
+        visibility: goal.visibility
       })
     }
   }, [goal])
@@ -55,7 +41,8 @@ export function EditGoalModal({ isOpen, onClose, onGoalUpdated, goal }: EditGoal
         name: editForm.name,
         description: editForm.description || null,
         frequency: editForm.frequency,
-        due_date: editForm.due_date || null
+        due_date: editForm.due_date || null,
+        visibility: editForm.visibility
       })
       .eq("id", goal.id)
       .select()
@@ -116,6 +103,23 @@ export function EditGoalModal({ isOpen, onClose, onGoalUpdated, goal }: EditGoal
               value={editForm.due_date}
               onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Visibility</label>
+            <Select
+              value={editForm.visibility}
+              onValueChange={(value: "public" | "private" | "friends") => setEditForm({ ...editForm, visibility: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="friends">Friends Only</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 mt-6">

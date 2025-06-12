@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type SortField = "name" | "due_date" | "created_at" | "frequency"
+export type SortField = "name" | "due_date" | "created_at" | "frequency" | "visibility"
 export type SortOrder = "asc" | "desc"
 
 export interface SortState {
@@ -37,7 +37,8 @@ export function GoalSort({ onSortChange }: GoalSortProps) {
     { label: "Name", value: "name" },
     { label: "Due Date", value: "due_date" },
     { label: "Created At", value: "created_at" },
-    { label: "Frequency", value: "frequency" }
+    { label: "Frequency", value: "frequency" },
+    { label: "Visibility", value: "visibility" }
   ]
 
   return (

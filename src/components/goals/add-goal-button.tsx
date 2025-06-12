@@ -1,9 +1,5 @@
 import { Plus } from "lucide-react"
-
-interface AddGoalButtonProps {
-  onClick: () => void
-  className?: string
-}
+import { AddGoalButtonProps } from "@/types/goals"
 
 export function AddGoalButton({ onClick, className = "" }: AddGoalButtonProps) {
   return (

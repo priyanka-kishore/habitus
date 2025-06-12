@@ -5,27 +5,11 @@ import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { GoalFilters } from "@/components/goals/goal-filters"
-import { GoalSort, type SortState } from "@/components/goals/goal-sort"
+import { GoalSort } from "@/components/goals/goal-sort"
 import { AddGoalButton } from "@/components/goals/add-goal-button"
 import { AddGoalModal } from "@/components/goals/add-goal-modal"
-
-interface Goal {
-  id: string
-  name: string
-  description?: string
-  frequency: "once" | "daily"
-  due_date?: string
-  created_at: string
-  done: boolean
-}
-
-interface FilterState {
-  name: string
-  description: string
-  frequency: string
-  dueDate: string
-  done: string
-}
+import { GoalDetailsModal } from "@/components/goals/goal-details-modal"
+import { Goal, FilterState, SortState } from "@/types/goals"
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([])
@@ -35,7 +19,8 @@ export default function GoalsPage() {
     description: "",
     frequency: "all",
     dueDate: "",
-    done: "all"
+    done: "all",
+    visibility: "all"
   })
   const [sort, setSort] = useState<SortState>({
     field: "created_at",
@@ -43,13 +28,15 @@ export default function GoalsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
 
   useEffect(() => {
     fetchGoals()
   }, [])
 
   async function fetchGoals() {
-    setLoading(true)
+    setLoading(true);
     const { data, error } = await supabase
       .from("goals")
       .select("*")
@@ -73,8 +60,9 @@ export default function GoalsPage() {
     const matchesFrequency = filters.frequency === "all" || goal.frequency === filters.frequency
     const matchesDueDate = !filters.dueDate || (goal.due_date && new Date(goal.due_date).toLocaleDateString('en-US', { timeZone: 'UTC' }) === filters.dueDate)
     const matchesDone = filters.done === "all" || goal.done.toString() === filters.done
+    const matchesVisibility = filters.visibility === "all" || (goal.visibility || "public") === filters.visibility
 
-    return matchesSearch && matchesName && matchesDescription && matchesFrequency && matchesDueDate && matchesDone
+    return matchesSearch && matchesName && matchesDescription && matchesFrequency && matchesDueDate && matchesDone && matchesVisibility
   })
 
   const sortedGoals = [...filteredGoals].sort((a, b) => {
@@ -85,7 +73,7 @@ export default function GoalsPage() {
     if (bValue === null || bValue === undefined) return -1
 
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sort.order === 'asc' 
+      return sort.order === 'asc'
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue)
     }
@@ -140,13 +128,19 @@ export default function GoalsPage() {
         onGoalAdded={handleGoalAdded}
       />
 
+      <GoalDetailsModal
+        isOpen={detailsOpen}
+        onClose={() => { setDetailsOpen(false); setSelectedGoal(null); }}
+        goal={selectedGoal}
+      />
+
       {/* Goals List */}
       {loading ? (
         <div>Loading...</div>
       ) : sortedGoals.length === 0 ? (
         <div className="text-gray-500">
-          {searchQuery || Object.values(filters).some(value => value !== "" && value !== "all") 
-            ? "No goals found matching your search and filters." 
+          {searchQuery || Object.values(filters).some(value => value !== "" && value !== "all")
+            ? "No goals found matching your search and filters."
             : "No goals yet."}
         </div>
       ) : (
@@ -154,7 +148,11 @@ export default function GoalsPage() {
           {sortedGoals.map((goal) => (
             <div
               key={goal.id}
-              className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              onClick={() => {
+                setSelectedGoal(goal)
+                setDetailsOpen(true)
+              }}
+              className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
             >
               <h3 className="font-semibold text-lg">{goal.name}</h3>
               {goal.description && (
@@ -167,6 +165,18 @@ export default function GoalsPage() {
                 )}
                 <span className={goal.done ? "text-green-600" : "text-yellow-600"}>
                   {goal.done ? "Completed" : "In Progress"}
+                </span>
+                <span
+                  className={
+                    `inline-block px-2 py-1 rounded ` +
+                    ((goal.visibility || "public") === "public"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : (goal.visibility || "public") === "friends"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200")
+                  }
+                >
+                  {(goal.visibility || "public").charAt(0).toUpperCase() + (goal.visibility || "public").slice(1)}
                 </span>
               </div>
             </div>

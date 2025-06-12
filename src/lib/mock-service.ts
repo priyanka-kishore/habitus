@@ -7,6 +7,7 @@ export interface Goal {
   due_date?: string
   created_at: string
   done: boolean
+  visibility: "public" | "private" | "friends"
 }
 
 // localStorage key
@@ -23,7 +24,8 @@ const loadGoals = (): Goal[] => {
         description: "15 minutes of mindfulness practice",
         frequency: "daily",
         created_at: new Date().toISOString(),
-        done: false
+        done: false,
+        visibility: "private"
       },
       {
         id: "2",
@@ -31,7 +33,8 @@ const loadGoals = (): Goal[] => {
         description: "Read at least 30 pages",
         frequency: "daily",
         created_at: new Date().toISOString(),
-        done: true
+        done: true,
+        visibility: "public"
       },
       {
         id: "3",
@@ -40,7 +43,8 @@ const loadGoals = (): Goal[] => {
         frequency: "once",
         due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         created_at: new Date().toISOString(),
-        done: false
+        done: false,
+        visibility: "friends"
       }
     ];
   }

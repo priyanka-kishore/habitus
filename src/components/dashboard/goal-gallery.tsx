@@ -15,16 +15,8 @@ import { AddGoalButton } from "@/components/goals/add-goal-button"
 import { AddGoalModal } from "@/components/goals/add-goal-modal"
 import { EditGoalModal } from "@/components/goals/edit-goal-modal"
 import { DeleteGoalModal } from "@/components/goals/delete-goal-modal"
-
-interface Goal {
-  id: string
-  name: string
-  description?: string
-  frequency: "once" | "daily"
-  due_date?: string
-  created_at: string
-  done: boolean
-}
+import { Goal } from "@/types/goals"
+import { GoalDetailsModal } from "@/components/goals/goal-details-modal"
 
 export default function GoalGallery() {
   const [goals, setGoals] = useState<Goal[]>([])
@@ -33,6 +25,8 @@ export default function GoalGallery() {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deletingGoal, setDeletingGoal] = useState<Goal | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
@@ -98,21 +92,31 @@ export default function GoalGallery() {
         goal={deletingGoal}
       />
 
+      <GoalDetailsModal
+        isOpen={detailsOpen}
+        onClose={() => { setDetailsOpen(false); setSelectedGoal(null); }}
+        goal={selectedGoal}
+      />
+
       {/* Gallery of Goal Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {goals.map((goal, i) => (
           <div
             key={goal.id}
             ref={el => { cardRefs.current[i] = el }}
+            onClick={() => {
+              setSelectedGoal(goal)
+              setDetailsOpen(true)
+            }}
             className={
-              `rounded-xl p-6 flex flex-col gap-2 border relative transition-all duration-200 ` +
+              `rounded-xl p-6 flex flex-col gap-2 border relative transition-all duration-200 cursor-pointer hover:shadow-md ` +
               (goal.done
                 ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
                 : "bg-white dark:bg-zinc-900")
             }
           >
             {/* More Dropdown */}
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:outline-none">
@@ -131,7 +135,7 @@ export default function GoalGallery() {
               </DropdownMenu>
             </div>
             {/* Checkbox to the left of goal name, no label */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
               <input
                 type="checkbox"
                 checked={goal.done}
@@ -177,6 +181,18 @@ export default function GoalGallery() {
                   Due: {goal.due_date}
                 </span>
               )}
+              <span
+                className={
+                  `inline-block px-2 py-1 rounded ` +
+                  ((goal.visibility || "public") === "public"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    : (goal.visibility || "public") === "friends"
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200")
+                }
+              >
+                {(goal.visibility || "public").charAt(0).toUpperCase() + (goal.visibility || "public").slice(1)}
+              </span>
             </div>
           </div>
         ))}

@@ -6,18 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Filter, X } from "lucide-react"
-
-interface FilterState {
-  name: string
-  description: string
-  frequency: string
-  dueDate: string
-  done: string
-}
-
-interface GoalFiltersProps {
-  onFilterChange: (filters: FilterState) => void
-}
+import { FilterState, GoalFiltersProps } from "@/types/goals"
 
 export function GoalFilters({ onFilterChange }: GoalFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
@@ -25,7 +14,8 @@ export function GoalFilters({ onFilterChange }: GoalFiltersProps) {
     description: "",
     frequency: "all",
     dueDate: "",
-    done: "all"
+    done: "all",
+    visibility: "all"
   })
 
   const handleFilterChange = (field: keyof FilterState, value: string) => {
@@ -40,7 +30,8 @@ export function GoalFilters({ onFilterChange }: GoalFiltersProps) {
       description: "",
       frequency: "all",
       dueDate: "",
-      done: "all"
+      done: "all",
+      visibility: "all"
     }
     setFilters(clearedFilters)
     onFilterChange(clearedFilters)
@@ -141,6 +132,24 @@ export function GoalFilters({ onFilterChange }: GoalFiltersProps) {
                     <SelectItem value="all">All</SelectItem>
                     <SelectItem value="true">Completed</SelectItem>
                     <SelectItem value="false">In Progress</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Visibility</label>
+                <Select
+                  value={filters.visibility}
+                  onValueChange={(value) => handleFilterChange("visibility", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="friends">Friends Only</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

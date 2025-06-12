@@ -3,23 +3,7 @@
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
-
-interface Goal {
-  id: string
-  name: string
-  description?: string
-  frequency: "once" | "daily"
-  due_date?: string
-  created_at: string
-  done: boolean
-}
-
-interface DeleteGoalModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onGoalDeleted: (goalId: string) => void
-  goal: Goal | null
-}
+import { Goal, DeleteGoalModalProps } from "@/types/goals"
 
 export function DeleteGoalModal({ isOpen, onClose, onGoalDeleted, goal }: DeleteGoalModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)

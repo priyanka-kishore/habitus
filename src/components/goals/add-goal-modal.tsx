@@ -5,29 +5,15 @@ import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-interface Goal {
-  id: string
-  name: string
-  description?: string
-  frequency: "once" | "daily"
-  due_date?: string
-  created_at: string
-  done: boolean
-}
-
-interface AddGoalModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onGoalAdded: (goal: Goal) => void
-}
+import { Goal, AddGoalModalProps } from "@/types/goals"
 
 export function AddGoalModal({ isOpen, onClose, onGoalAdded }: AddGoalModalProps) {
   const [newGoal, setNewGoal] = useState({
     name: "",
     description: "",
     frequency: "once" as "once" | "daily",
-    due_date: ""
+    due_date: "",
+    visibility: "private" as "public" | "private" | "friends"
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -43,7 +29,8 @@ export function AddGoalModal({ isOpen, onClose, onGoalAdded }: AddGoalModalProps
         description: newGoal.description || undefined,
         frequency: newGoal.frequency,
         due_date: newGoal.due_date || undefined,
-        done: false
+        done: false,
+        visibility: newGoal.visibility
       }])
       .select()
       .then(response => response)
@@ -55,7 +42,8 @@ export function AddGoalModal({ isOpen, onClose, onGoalAdded }: AddGoalModalProps
         name: "",
         description: "",
         frequency: "once",
-        due_date: ""
+        due_date: "",
+        visibility: "private"
       })
     }
     setIsSubmitting(false)
@@ -110,6 +98,23 @@ export function AddGoalModal({ isOpen, onClose, onGoalAdded }: AddGoalModalProps
               value={newGoal.due_date}
               onChange={(e) => setNewGoal({ ...newGoal, due_date: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Visibility</label>
+            <Select
+              value={newGoal.visibility}
+              onValueChange={(value: "public" | "private" | "friends") => setNewGoal({ ...newGoal, visibility: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="friends">Friends Only</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 mt-6">
