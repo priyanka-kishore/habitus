@@ -44,6 +44,11 @@ export default function GoalGallery() {
       .from("goals")
       .select("*")
       .order("created_at", { ascending: false })
+      .then(response => response)
+
+    console.log('GoalGallery: Fetched data', data);
+    console.log('GoalGallery: Error', error);
+
     if (!error && data) setGoals(data)
   }
 

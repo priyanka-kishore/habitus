@@ -40,12 +40,13 @@ export function AddGoalModal({ isOpen, onClose, onGoalAdded }: AddGoalModalProps
       .from("goals")
       .insert([{
         name: newGoal.name,
-        description: newGoal.description || null,
+        description: newGoal.description || undefined,
         frequency: newGoal.frequency,
-        due_date: newGoal.due_date || null,
+        due_date: newGoal.due_date || undefined,
         done: false
       }])
       .select()
+      .then(response => response)
 
     if (!error && data) {
       onGoalAdded(data[0])

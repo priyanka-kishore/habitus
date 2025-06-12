@@ -54,6 +54,11 @@ export default function GoalsPage() {
       .from("goals")
       .select("*")
       .order("created_at", { ascending: false })
+      .then(response => response)
+    
+    console.log('GoalsPage: Fetched data', data);
+    console.log('GoalsPage: Error', error);
+
     if (!error && data) setGoals(data)
     setLoading(false)
   }
