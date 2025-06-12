@@ -17,6 +17,8 @@ import { EditGoalModal } from "@/components/goals/edit-goal-modal"
 import { DeleteGoalModal } from "@/components/goals/delete-goal-modal"
 import { Goal } from "@/types/goals"
 import { GoalDetailsModal } from "@/components/goals/goal-details-modal"
+import { mockUsers } from "@/lib/mock-users"
+import Image from "next/image"
 
 export default function GoalGallery() {
   const [goals, setGoals] = useState<Goal[]>([])
@@ -193,6 +195,36 @@ export default function GoalGallery() {
               >
                 {(goal.visibility || "public").charAt(0).toUpperCase() + (goal.visibility || "public").slice(1)}
               </span>
+            </div>
+
+            {/* User Avatars */}
+            <div className="flex items-center gap-1 mt-2 ml-auto">
+              {mockUsers.slice(0, 3).map((user, index) => (
+                <div
+                  key={user.id}
+                  className="relative h-6 w-6 rounded-full overflow-hidden border-2 border-background"
+                  style={{ marginLeft: index > 0 ? '-8px' : '0' }}
+                >
+                  {user.avatar_url ? (
+                    <Image
+                      src={user.avatar_url}
+                      alt={user.full_name}
+                      fill
+                      sizes="24px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-xs font-semibold text-muted-foreground bg-secondary">
+                      {user.full_name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {mockUsers.length > 3 && (
+                <div className="relative h-6 w-6 rounded-full overflow-hidden border-2 border-background bg-secondary flex items-center justify-center text-xs font-semibold text-muted-foreground">
+                  +{mockUsers.length - 3}
+                </div>
+              )}
             </div>
           </div>
         ))}

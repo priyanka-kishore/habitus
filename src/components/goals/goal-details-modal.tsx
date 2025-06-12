@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Goal } from "@/types/goals"
 import { Pencil } from "lucide-react"
+import { mockUsers } from "@/lib/mock-users"
+import Image from "next/image"
 
 interface GoalDetailsModalProps {
   isOpen: boolean
@@ -61,6 +63,41 @@ export function GoalDetailsModal({ isOpen, onClose, goal, onEdit }: GoalDetailsM
           <div className="flex items-center gap-2">
             <span className="font-medium">Visibility:</span>
             <span className="capitalize">{goal.visibility || "public"}</span>
+          </div>
+        </div>
+
+        {/* Shared With Section */}
+        <div className="pt-4 border-t">
+          <h3 className="font-medium mb-3">Shared With</h3>
+          <div className="space-y-3">
+            {mockUsers.slice(0, 3).map((user) => (
+              <div key={user.id} className="flex items-center gap-3">
+                <div className="relative h-10 w-10 rounded-full overflow-hidden bg-secondary">
+                  {user.avatar_url ? (
+                    <Image
+                      src={user.avatar_url}
+                      alt={user.full_name}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-lg font-semibold text-muted-foreground">
+                      {user.full_name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="font-medium">{user.full_name}</div>
+                  <div className="text-sm text-muted-foreground">@{user.username}</div>
+                </div>
+              </div>
+            ))}
+            {mockUsers.length > 3 && (
+              <div className="text-sm text-muted-foreground">
+                +{mockUsers.length - 3} more people
+              </div>
+            )}
           </div>
         </div>
 
